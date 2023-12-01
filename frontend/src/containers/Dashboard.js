@@ -75,6 +75,7 @@ export default class {
     $('#arrow-icon1').click((e) => this.handleShowTickets(e, bills, 1))
     $('#arrow-icon2').click((e) => this.handleShowTickets(e, bills, 2))
     $('#arrow-icon3').click((e) => this.handleShowTickets(e, bills, 3))
+    
     new Logout({ localStorage, onNavigate })
   }
 
@@ -86,16 +87,18 @@ export default class {
   }
 
   handleEditTicket(e, bill, bills) {
-    if (this.counter === undefined || this.id !== bill.id) this.counter = 0
-    if (this.id === undefined || this.id !== bill.id) this.id = bill.id
-    if (this.counter % 2 === 0) {
+    if(this.selectedId===bill.id){
+      this.selectedId = undefined
+    }else{
+      this.selectedId = bill.id
+    }
+    if (this.selectedId===bill.id) {
       bills.forEach(b => {
         $(`#open-bill${b.id}`).css({ background: '#0D5AE5' })
       })
       $(`#open-bill${bill.id}`).css({ background: '#2A2B35' })
       $('.dashboard-right-container div').html(DashboardFormUI(bill))
       $('.vertical-navbar').css({ height: '150vh' })
-      this.counter ++
     } else {
       $(`#open-bill${bill.id}`).css({ background: '#0D5AE5' })
 
@@ -103,7 +106,6 @@ export default class {
         <div id="big-billed-icon" data-testid="big-billed-icon"> ${BigBilledIcon} </div>
       `)
       $('.vertical-navbar').css({ height: '120vh' })
-      this.counter ++
     }
     $('#icon-eye-d').click(this.handleClickIconEye)
     $('#btn-accept-bill').click((e) => this.handleAcceptSubmit(e, bill))
@@ -131,22 +133,25 @@ export default class {
   }
 
   handleShowTickets(e, bills, index) {
-    if (this.counter === undefined || this.index !== index) this.counter = 0
-    if (this.index === undefined || this.index !== index) this.index = index
-    if (this.counter % 2 === 0) {
-      $(`#arrow-icon${this.index}`).css({ transform: 'rotate(0deg)'})
-      $(`#status-bills-container${this.index}`)
-        .html(cards(filteredBills(bills, getStatus(this.index))))
-      this.counter ++
+    const containerDom = $(`#status-bills-container${index}`)
+    const arrowDom = $(`#arrow-icon${index}`)
+
+    bills.forEach(bill => {
+      $(`#open-bill${bill.id}`).off(`click.editTicket${bill.id}`);
+    })
+
+    if (containerDom[0].getAttribute('data-opened')=='false') {
+      arrowDom.css({ transform: 'rotate(0deg)'})
+      containerDom.html(cards(filteredBills(bills, getStatus(index))))
+      containerDom[0].setAttribute('data-opened', 'true')
     } else {
-      $(`#arrow-icon${this.index}`).css({ transform: 'rotate(90deg)'})
-      $(`#status-bills-container${this.index}`)
-        .html("")
-      this.counter ++
+      arrowDom.css({ transform: 'rotate(90deg)'})
+      containerDom.html("")
+      containerDom[0].setAttribute('data-opened', 'false')
     }
 
     bills.forEach(bill => {
-      $(`#open-bill${bill.id}`).click((e) => this.handleEditTicket(e, bill, bills))
+      $(`#open-bill${bill.id}`).on(`click.editTicket${bill.id}`, (e) => this.handleEditTicket(e, bill, bills));
     })
 
     return bills
