@@ -20,7 +20,10 @@ export default class NewBill {
     const file = this.document.querySelector(`input[data-testid="file"]`).files[0]
     const fileType = file.type;
     if(fileType!="image/png" && fileType!="image/jpeg"){
-      throw Error(`Le format .${fileType.split("/")[1]} n'est pas accepté !`);
+      this.document.querySelector(`input[data-testid="file"]`).files = [];
+      const errorMsg = `Le format .${fileType.split("/")[1]} n'est pas accepté !`
+      alert(errorMsg)
+      throw Error(errorMsg);
     }
     const filePath = e.target.value.split(/\\/g)
     const fileName = filePath[filePath.length-1]
