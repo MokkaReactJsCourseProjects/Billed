@@ -1,9 +1,8 @@
 import VerticalLayout from './VerticalLayout.js'
 
 export default () => {
-
   return (`
-    <div class='layout'>
+    <div class='layout' id="ceci-test">
       ${VerticalLayout(120)}
       <div class='content'>
         <div class='content-header'>

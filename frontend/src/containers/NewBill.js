@@ -6,6 +6,7 @@ export default class NewBill {
     this.document = document
     this.onNavigate = onNavigate
     this.store = store
+    
     const formNewBill = this.document.querySelector(`form[data-testid="form-new-bill"]`)
     formNewBill.addEventListener("submit", this.handleSubmit)
     const file = this.document.querySelector(`input[data-testid="file"]`)
@@ -17,12 +18,13 @@ export default class NewBill {
   }
   handleChangeFile = e => {
     e.preventDefault()
-    const file = this.document.querySelector(`input[data-testid="file"]`).files[0]
+    const file = this.document.querySelector(`input[data-testid="file"]`).files[0];
     const fileType = file.type;
+    //Only png and jpeg files are accepted
     if(fileType!="image/png" && fileType!="image/jpeg"){
-      this.document.querySelector(`input[data-testid="file"]`).files = [];
-      const errorMsg = `Le format .${fileType.split("/")[1]} n'est pas accepté !`
-      alert(errorMsg)
+      this.document.querySelector(`input[data-testid="file"]`).value = "";
+      const errorMsg = `Le format .${fileType.split("/")[1]} n'est pas accepté !`;
+      alert(errorMsg);
       throw Error(errorMsg);
     }
     const filePath = e.target.value.split(/\\/g)

@@ -2,37 +2,39 @@
  * @jest-environment jsdom
  */
 
-import { screen, waitFor } from "@testing-library/dom";
 import "@testing-library/jest-dom";
+import { screen, waitFor } from "@testing-library/dom";
 import BillsUI from "../views/BillsUI.js";
 import { bills } from "../fixtures/bills.js";
 import { ROUTES, ROUTES_PATH } from "../constants/routes.js";
 import { localStorageMock } from "../__mocks__/localStorage.js";
 import Bills from "../containers/Bills.js";
-
 import router from "../app/Router.js";
 import userEvent from "@testing-library/user-event";
+import storeMock from "../__mocks__/store.js"
+
 
 describe("Given I am connected as an employee", () => {
 	beforeAll(() => {
-		Object.defineProperty(window, 'localStorage', { value: localStorageMock })
+		Object.defineProperty(window, 'localStorage', { value: localStorageMock });
 		window.localStorage.setItem('user', JSON.stringify({
-		  type: 'Employee'
-		}))
-		const root = document.createElement("div")
-		root.setAttribute("id", "root")
-		document.body.append(root)
-		router()
-	  })
-	describe("When I am on Bills Page", () => {
-		test("Then bill icon in vertical layout should be highlighted", async () => {
-			window.onNavigate(ROUTES_PATH.Bills);
-			await waitFor(() => screen.getByTestId("icon-window"));
+			type: 'Employee'
+		}));
+		const root = document.createElement("div");
+		root.setAttribute("id", "root");
+		document.body.append(root);
+		router();
+		})
+	beforeEach(()=>{
+		document.body.innerHTML = BillsUI({ data: bills });
+		window.onNavigate(ROUTES_PATH.Bills);
+	})
+	describe("When I navigate to Bills Page", () => {
+		test("Then bill icon in vertical layout should be highlighted", () => {
 			const windowIcon = screen.getByTestId("icon-window");
 			expect(windowIcon).toHaveClass("active-icon");
 		});
 		test("Then bills should be ordered from earliest to latest", () => {
-			document.body.innerHTML = BillsUI({ data: bills });
 			const dates = screen
 				.getAllByText(
 					/^(19|20)\d\d[- /.](0[1-9]|1[012])[- /.](0[1-9]|[12][0-9]|3[01])$/i
@@ -42,42 +44,78 @@ describe("Given I am connected as an employee", () => {
 			const datesSorted = [...dates].sort(antiChrono);
 			expect(dates).toEqual(datesSorted);
 		});
+		test("Then bills should be fetched from the mocked API",()=>{
+			expect(screen.getByText("NOM_TEST_46szz")).toBeTruthy()
+		})
+		
 	});
+	describe(`When a bill's date is corrupted`, () => {
+		test("Then, the bill's date should not be formatted", async ()=>{
+			const store = {
+				bills() {
+					return {
+						list() {
+							return Promise.resolve([{
+							  "id": "47qAXb6fIm2zOKkLzMro",
+							  "vat": "80",
+							  "fileUrl": "https://test.storage.tld/v0/b/billable-677b6.a…f-1.jpg?alt=media&token=c1640e12-a24b-4b11-ae52-529112e9602a",
+							  "status": "pending",
+							  "type": "Hôtel et logement",
+							  "commentary": "séminaire billed",
+							  "name": "encore",
+							  "fileName": "preview-facture-free-201801-pdf-1.jpg",
+							  "date": "C0RRUPTED_DAT3",
+							  "amount": 400,
+							  "commentAdmin": "ok",
+							  "email": "a@a",
+							  "pct": 20
+							}])
+						}
+					}
+				  },
+			};
+			store.bills().list().then(docs=>docs[0])
+			const container = new Bills({document, onNavigate, store, localStorage: window.localStorage});
+			const data = await container.getBills();
+			document.body.innerHTML = BillsUI({ data });
+			expect(screen.getByText("C0RRUPTED_DAT3")).toBeTruthy();
+		})
+	})
+	describe('When I am on Bills page and I click the New Bill button', () => {
+		test('Then it should render the New Bill Page',  () => {
+			const onNavigate = (pathname) => {
+				document.body.innerHTML = ROUTES({ pathname });
+			};
+			const container = new Bills({document, onNavigate, store:storeMock, localStorage: window.localStorage});
+			document.body.innerHTML = BillsUI({ data: bills });
+			const buttonNewBill = screen.getByTestId("btn-new-bill");
+			const handleClick = jest.fn(container.handleClickNewBill);
+			buttonNewBill.addEventListener("click", handleClick);
+			userEvent.click(buttonNewBill);
+			expect(handleClick).toHaveBeenCalled();
+			expect(screen.getAllByText("Envoyer une note de frais")).toBeTruthy();
+		})
+	})
+	describe('When I am on Bills page but it is loading', () => {
+		test('Then, Loading page should be rendered', () => {
+			document.body.innerHTML = BillsUI({ loading: true })
+			expect(screen.getAllByText('Loading...')).toBeTruthy()
+		})
+	})
+	describe('When I am on Bills Page but back-end send an error message', () => {
+		test('Then, Error page should be rendered', () => {
+			document.body.innerHTML = BillsUI({ error: 'some error message' })
+			expect(screen.getAllByText('Erreur')).toBeTruthy();
+		})
+	})
 	describe("When I am on Bills Page, and I click an eye icon", () => {
 		test("Then the bill's image modal should be shown", async () => {
-			document.body.innerHTML = BillsUI({ data: [bills[0]] })
-			//window.onNavigate(ROUTES_PATH.Bills);
 			await waitFor(() => screen.getAllByTestId("icon-eye"));
 			const eyeIcon = screen.getAllByTestId("icon-eye")[0];
-			
-			const openModalMock = jest.fn(() => {})
-			eyeIcon.addEventListener('click', openModalMock)
+			const modale = screen.getByTestId("modaleFileEmployee");
 			userEvent.click(eyeIcon);
-			expect(openModalMock).toHaveBeenCalled()
-			const modal = await waitFor(() => document.getElementById("modaleFile"))
-			console.log(modal)
-			const openBillUrl = await waitFor(() => screen.getByTestId(`open-${bills[0].fileUrl}`))
-			expect(openBillUrl).toBeTruthy()
+			expect(modale.getAttribute("style")).toBe("padding-right: 0px;");
+			
 		});
 	});
-	/*
-	// test d'intégration GET
-	describe("Given I am a user connected as Admin", () => {
-		describe("When I navigate to Dashboard", () => {
-		test("fetches bills from mock API GET", async () => {
-			localStorage.setItem("user", JSON.stringify({ type: "Admin", email: "a@a" }));
-			const root = document.createElement("div")
-			root.setAttribute("id", "root")
-			document.body.append(root)
-			router()
-			window.onNavigate(ROUTES_PATH.Dashboard)
-			await waitFor(() => screen.getByText("Validations"))
-			const contentPending  = await screen.getByText("En attente (1)")
-			expect(contentPending).toBeTruthy()
-			const contentRefused  = await screen.getByText("Refusé (2)")
-			expect(contentRefused).toBeTruthy()
-			expect(screen.getByTestId("big-billed-icon")).toBeTruthy()
-		})
-		})
-	})*/
 });

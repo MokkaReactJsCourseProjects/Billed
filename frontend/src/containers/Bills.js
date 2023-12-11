@@ -10,8 +10,7 @@ export default class {
 		const buttonNewBill = document.querySelector(
 			`button[data-testid="btn-new-bill"]`
 		);
-		if (buttonNewBill)
-			buttonNewBill.addEventListener("click", this.handleClickNewBill);
+		if (buttonNewBill){buttonNewBill.addEventListener("click", this.handleClickNewBill);}
 		const iconEye = document.querySelectorAll(`div[data-testid="icon-eye"]`);
 		if (iconEye)
 			iconEye.forEach((icon) => {
@@ -30,7 +29,7 @@ export default class {
 		$("#modaleFile")
 			.find(".modal-body")
 			.html(
-				`<div style='text-align: center;' class="bill-proof-container"><img width=${imgWidth} src=${billUrl} alt="Bill" /></div>`
+				`<div style='text-align: center;' class="bill-proof-container" ><img width=${imgWidth} src=${billUrl} alt="Bill" /></div>`
 			);
 		$("#modaleFile").modal("show");
 	};
