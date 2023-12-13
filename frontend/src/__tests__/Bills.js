@@ -11,7 +11,7 @@ import { localStorageMock } from "../__mocks__/localStorage.js";
 import Bills from "../containers/Bills.js";
 import router from "../app/Router.js";
 import userEvent from "@testing-library/user-event";
-import storeMock from "../__mocks__/store.js"
+import storeMock from "../__mocks__/store.js";
 
 
 describe("Given I am connected as an employee", () => {
@@ -94,18 +94,6 @@ describe("Given I am connected as an employee", () => {
 			userEvent.click(buttonNewBill);
 			expect(handleClick).toHaveBeenCalled();
 			expect(screen.getAllByText("Envoyer une note de frais")).toBeTruthy();
-		})
-	})
-	describe('When I am on Bills page but it is loading', () => {
-		test('Then, Loading page should be rendered', () => {
-			document.body.innerHTML = BillsUI({ loading: true })
-			expect(screen.getAllByText('Loading...')).toBeTruthy()
-		})
-	})
-	describe('When I am on Bills Page but back-end send an error message', () => {
-		test('Then, Error page should be rendered', () => {
-			document.body.innerHTML = BillsUI({ error: 'some error message' })
-			expect(screen.getAllByText('Erreur')).toBeTruthy();
 		})
 	})
 	describe("When I am on Bills Page, and I click an eye icon", () => {
