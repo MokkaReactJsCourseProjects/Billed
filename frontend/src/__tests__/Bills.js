@@ -51,6 +51,7 @@ describe("Given I am connected as an employee", () => {
 	});
 	describe(`When a bill's date is corrupted`, () => {
 		test("Then, the bill's date should not be formatted", async ()=>{
+			console.log = jest.fn();
 			const store = {
 				bills() {
 					return {
@@ -103,7 +104,6 @@ describe("Given I am connected as an employee", () => {
 			const modale = screen.getByTestId("modaleFileEmployee");
 			userEvent.click(eyeIcon);
 			expect(modale.getAttribute("style")).toBe("padding-right: 0px;");
-			
 		});
 	});
 });

@@ -18,21 +18,16 @@ export default class NewBill {
   handleChangeFile = e => {
     e.preventDefault()
     const file = this.document.querySelector(`input[data-testid="file"]`).files[0];
-    const fileType = file.type;
-    //Only png and jpeg files are accepted
-    if(fileType!="image/png" && fileType!="image/jpeg"){
-      this.document.querySelector(`input[data-testid="file"]`).value = "";
-      const errorMsg = `Le format .${fileType.split("/")[1]} n'est pas accepté !`;
-      alert(errorMsg);
-      return;
-    }
+    
     const fileLocalPath = e.target.value.split(/\\/g)
     const fileName = fileLocalPath[fileLocalPath.length-1]
     const formData = new FormData()
     const email = JSON.parse(localStorage.getItem("user")).email
     formData.append('file', file)
     formData.append('email', email)
-
+    if(fileIsAccepted(file, this.document)===false){
+      return;
+    }
     this.store
       .bills()
       .create({
@@ -79,4 +74,15 @@ export default class NewBill {
       .catch(error => console.error(error))
     }
   }
+}
+
+export function fileIsAccepted(file, doc){
+  const fileType = file.type;
+  if(fileType!="image/png" && fileType!="image/jpeg"){
+    doc.querySelector(`input[data-testid="file"]`).value = "";
+    const errorMsg = `Le format .${fileType.split("/")[1]} n'est pas accepté !`;
+    alert(errorMsg);
+    return false;
+  }
+  return true;
 }
