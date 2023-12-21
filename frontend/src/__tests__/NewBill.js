@@ -61,7 +61,7 @@ describe("Given I am connected as an employee", () => {
     });
   });
 
-  describe("When an error occurs on API", () => {
+  describe("When an error occurs on the API", () => {
     beforeEach(()=>{
       console.error = jest.fn();
       const store = {bills:()=>{return {create:()=>Promise.reject("Erreur 500"),update:()=>Promise.reject("Erreur 404")}}}
@@ -83,8 +83,7 @@ describe("Given I am connected as an employee", () => {
       await new Promise(process.nextTick);
       expect(console.error).toHaveBeenCalledWith("Erreur 404");
     })
-  })
-  
+  });
 });
 
 

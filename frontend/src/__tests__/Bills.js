@@ -94,7 +94,7 @@ describe("Given I am connected as an employee", () => {
 			buttonNewBill.addEventListener("click", handleClick);
 			userEvent.click(buttonNewBill);
 			expect(handleClick).toHaveBeenCalled();
-			expect(screen.getAllByText("Envoyer une note de frais")).toBeTruthy();
+			expect(screen.getByText("Envoyer une note de frais")).toBeTruthy();
 		})
 	})
 	describe("When I am on Bills Page, and I click an eye icon", () => {
@@ -106,4 +106,18 @@ describe("Given I am connected as an employee", () => {
 			expect(modale.getAttribute("style")).toBe("padding-right: 0px;");
 		});
 	});
+
+	describe("When an error occurs on the API while trying to fetch the bills", () => {
+		test("Then it should console.error the error", async () => {
+			console.error = jest.fn();
+			const store = {bills:()=>{return {list:()=>Promise.reject("Erreur 500")}}};
+			const container = new Bills({document, onNavigate, store, localStorage: window.localStorage});
+			await container.getBills().then(data => {
+				console.log("Fetch successful : " + data);
+			  }).catch(error => {
+				console.error(error);
+			  });
+			expect(console.error).toHaveBeenCalledWith("Erreur 500");
+		})
+	  });
 });
